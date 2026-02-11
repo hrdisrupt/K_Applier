@@ -1,0 +1,29 @@
+# Web Framework
+fastapi==0.109.2
+uvicorn[standard]==0.27.1
+
+# Database
+sqlmodel==0.0.14
+pydantic==2.6.1
+pydantic-settings==2.1.0
+
+# Database - Azure SQL Server support
+pyodbc==5.1.0
+
+# Validation
+email-validator==2.1.0
+
+# Browser Automation
+playwright==1.41.2
+
+# HTTP Client (per URL CV loader)
+httpx==0.27.0
+
+# Utilities
+python-multipart==0.0.9
+
+# Optional: Azure Blob Storage
+# azure-storage-blob==12.19.0
+
+# Optional: AWS S3
+# boto3==1.34.0

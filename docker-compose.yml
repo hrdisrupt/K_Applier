@@ -1,0 +1,24 @@
+services:
+  api:
+    build: .
+    container_name: kangrats-autoapply
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./data:/app/data
+      - ./cvs:/app/cvs
+    environment:
+      # Local development (SQLite):
+      - DATABASE_URL=sqlite:///./data/autoapply.db
+      # Production (Azure SQL - uncomment and fill in, remove SQLite line above):
+      # - DATABASE_URL=mssql+pyodbc://username:password@yourserver.database.windows.net/kangrats?driver=ODBC+Driver+18+for+SQL+Server&Encrypt=yes&TrustServerCertificate=no
+      - CV_LOADER_TYPE=local
+      - CV_BASE_PATH=/app/cvs
+      - HEADLESS=true
+      - DRY_RUN=false
+      - SAVE_SCREENSHOTS=true
+    restart: unless-stopped
+
+volumes:
+  data:
+  cvs:
