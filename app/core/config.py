@@ -41,6 +41,14 @@ class Settings(BaseSettings):
     # Screenshots
     save_screenshots: bool = True
     screenshots_path: str = "./data/screenshots"
+    # Screenshot mode: "all" = every step, "minimal" = before_submit + result only, "errors" = only on failure
+    screenshot_mode: str = "all"
+    # Upload screenshots to Azure Blob Storage (requires azure_storage_connection_string)
+    upload_screenshots_to_blob: bool = False
+    
+    # Azure Service Bus (queue consumer mode)
+    servicebus_connection_string: str = ""
+    servicebus_queue_name: str = "applications"
     
     @property
     def is_sqlite(self) -> bool:

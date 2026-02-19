@@ -11,8 +11,28 @@ from playwright.async_api import async_playwright, Page, Browser, TimeoutError a
 from ..core.config import get_settings
 from ..models.application import Application, ApplicationStatus
 from .cv_loader import get_cv_loader
+from .blob_uploader import get_blob_uploader
 
 settings = get_settings()
+
+# Screenshot steps by mode
+_SCREENSHOT_STEPS = {
+    "all": {"step0_page_loaded", "step1_after_rispondi", "step2_form_visible", 
+            "before_submit", "success", "after_submit", "error",
+            "error_no_rispondi_button", "error_no_candidatura_diretta"},
+    "minimal": {"before_submit", "success", "after_submit", "error",
+                "error_no_rispondi_button", "error_no_candidatura_diretta"},
+    "errors": {"error", "error_no_rispondi_button", "error_no_candidatura_diretta", "after_submit"},
+}
+
+
+def _should_take_screenshot(suffix: str) -> bool:
+    """Check if screenshot should be taken based on screenshot_mode"""
+    if not settings.save_screenshots:
+        return False
+    mode = settings.screenshot_mode
+    allowed = _SCREENSHOT_STEPS.get(mode, _SCREENSHOT_STEPS["all"])
+    return suffix in allowed
 
 
 class AutoApplyService:
@@ -76,7 +96,7 @@ class AutoApplyService:
             await self._handle_cookie_banner(page)
             
             # Screenshot iniziale
-            if settings.save_screenshots:
+            if _should_take_screenshot("step0_page_loaded"):
                 await self._take_screenshot(page, application, "step0_page_loaded")
             
             # Estrai info job se non presenti
@@ -92,7 +112,7 @@ class AutoApplyService:
             
             rispondi_button = await self._find_rispondi_button(page)
             if not rispondi_button:
-                if settings.save_screenshots:
+                if _should_take_screenshot("error_no_rispondi_button"):
                     application.screenshot_path = await self._take_screenshot(page, application, "error_no_rispondi_button")
                 application.status = ApplicationStatus.SKIPPED
                 application.error_message = "Rispondi all'offerta button not found"
@@ -104,7 +124,7 @@ class AutoApplyService:
             await asyncio.sleep(0.5)  # Attendi popup
             
             # Screenshot dopo click
-            if settings.save_screenshots:
+            if _should_take_screenshot("step1_after_rispondi"):
                 await self._take_screenshot(page, application, "step1_after_rispondi")
             
             # STEP 2: Clicca "Candidatura diretta" nel popup
@@ -112,7 +132,7 @@ class AutoApplyService:
             
             candidatura_diretta = await self._find_candidatura_diretta(page)
             if not candidatura_diretta:
-                if settings.save_screenshots:
+                if _should_take_screenshot("error_no_candidatura_diretta"):
                     application.screenshot_path = await self._take_screenshot(page, application, "error_no_candidatura_diretta")
                 application.status = ApplicationStatus.SKIPPED
                 application.error_message = "Candidatura diretta option not found"
@@ -131,7 +151,7 @@ class AutoApplyService:
                 print(f"[AUTOAPPLY] ⚠️ Form fields visibility check timed out, proceeding anyway", flush=True)
             
             # Screenshot dopo candidatura diretta
-            if settings.save_screenshots:
+            if _should_take_screenshot("step2_form_visible"):
                 await self._take_screenshot(page, application, "step2_form_visible")
             
             # Compila il form
@@ -139,7 +159,7 @@ class AutoApplyService:
             await self._fill_application_form(page, application)
             
             # Screenshot prima dell'invio
-            if settings.save_screenshots:
+            if _should_take_screenshot("before_submit"):
                 screenshot_path = await self._take_screenshot(page, application, "before_submit")
             
             # DRY RUN MODE - non inviare realmente
@@ -147,7 +167,7 @@ class AutoApplyService:
                 print(f"[AUTOAPPLY] 🧪 DRY RUN MODE - Skipping actual submit", flush=True)
                 application.status = ApplicationStatus.SUCCESS
                 application.error_message = "DRY RUN - Form filled but not submitted"
-                if settings.save_screenshots:
+                if _should_take_screenshot("before_submit"):
                     application.screenshot_path = screenshot_path
                 print(f"[AUTOAPPLY] ✅ DRY RUN completed successfully!", flush=True)
                 return application
@@ -166,14 +186,12 @@ class AutoApplyService:
             success = await self._verify_submission(page)
             
             # Screenshot dopo l'invio (cattura il popup di successo/errore)
-            if settings.save_screenshots:
-                if success:
-                    # Attendi un attimo per il popup di successo
-                    await asyncio.sleep(1)
-                    application.screenshot_path = await self._take_screenshot(page, application, "success")
-                    print(f"[AUTOAPPLY] 📸 Success screenshot saved", flush=True)
-                else:
-                    application.screenshot_path = await self._take_screenshot(page, application, "after_submit")
+            if success and _should_take_screenshot("success"):
+                await asyncio.sleep(1)
+                application.screenshot_path = await self._take_screenshot(page, application, "success")
+                print(f"[AUTOAPPLY] 📸 Success screenshot saved", flush=True)
+            elif not success and _should_take_screenshot("after_submit"):
+                application.screenshot_path = await self._take_screenshot(page, application, "after_submit")
             
             if success:
                 application.status = ApplicationStatus.SUCCESS
@@ -194,7 +212,7 @@ class AutoApplyService:
             print(f"[AUTOAPPLY] ❌ Error: {type(e).__name__}: {e}", flush=True)
             
             # Screenshot dell'errore
-            if settings.save_screenshots and page:
+            if _should_take_screenshot("error") and page:
                 try:
                     await self._take_screenshot(page, application, "error")
                 except:
@@ -929,20 +947,27 @@ class AutoApplyService:
         return False
     
     async def _take_screenshot(self, page: Page, application: Application, suffix: str) -> str:
-        """Salva uno screenshot e l'HTML della pagina"""
+        """Salva uno screenshot e l'HTML della pagina, opzionalmente uploada su Blob"""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         base_filename = f"app_{application.id}_{suffix}_{timestamp}"
         
-        # Salva screenshot
+        # Salva screenshot localmente
         screenshot_path = Path(settings.screenshots_path) / f"{base_filename}.png"
         await page.screenshot(path=str(screenshot_path), full_page=True)
         print(f"[AUTOAPPLY] Screenshot saved: {base_filename}.png", flush=True)
         
-        # Salva HTML
+        # Salva HTML localmente
         html_path = Path(settings.screenshots_path) / f"{base_filename}.html"
         html_content = await page.content()
         with open(html_path, 'w', encoding='utf-8') as f:
             f.write(html_content)
         print(f"[AUTOAPPLY] HTML saved: {base_filename}.html", flush=True)
+        
+        # Upload su Azure Blob Storage se configurato
+        if settings.upload_screenshots_to_blob:
+            uploader = get_blob_uploader()
+            if uploader.is_available:
+                uploader.upload_file(str(screenshot_path), "screenshots")
+                uploader.upload_file(str(html_path), "screenshots")
         
         return str(screenshot_path)

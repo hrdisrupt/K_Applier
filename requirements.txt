@@ -10,6 +10,12 @@ pydantic-settings==2.1.0
 # Database - Azure SQL Server support
 pyodbc==5.1.0
 
+# Azure Service Bus (queue consumer)
+azure-servicebus==7.12.1
+
+# Azure Blob Storage (screenshots + CV upload)
+azure-storage-blob==12.19.0
+
 # Validation
 email-validator==2.1.0
 

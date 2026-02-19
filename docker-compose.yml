@@ -1,4 +1,5 @@
 services:
+  # REST API - manual application management & processing
   api:
     build: .
     container_name: kangrats-autoapply
@@ -17,7 +18,32 @@ services:
       - HEADLESS=true
       - DRY_RUN=false
       - SAVE_SCREENSHOTS=true
+      # Screenshot mode: all, minimal, errors
+      - SCREENSHOT_MODE=all
+      # Azure Blob Storage (uncomment to enable upload)
+      # - AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=https;AccountName=...
+      # - AZURE_CONTAINER_NAME=kangrats
+      # - UPLOAD_SCREENSHOTS_TO_BLOB=true
     restart: unless-stopped
+
+  # Queue Worker - listens to Azure Service Bus and processes automatically
+  # Uncomment to enable queue-based processing
+  # worker:
+  #   build: .
+  #   container_name: kangrats-autoapply-worker
+  #   command: ["python", "-m", "app.worker"]
+  #   volumes:
+  #     - ./data:/app/data
+  #     - ./cvs:/app/cvs
+  #   environment:
+  #     - DATABASE_URL=mssql+pyodbc://username:password@yourserver.database.windows.net/kangrats?driver=ODBC+Driver+18+for+SQL+Server&Encrypt=yes&TrustServerCertificate=no
+  #     - SERVICEBUS_CONNECTION_STRING=Endpoint=sb://yournamespace.servicebus.windows.net/;SharedAccessKeyName=...
+  #     - SERVICEBUS_QUEUE_NAME=applications
+  #     - CV_LOADER_TYPE=local
+  #     - CV_BASE_PATH=/app/cvs
+  #     - HEADLESS=true
+  #     - SAVE_SCREENSHOTS=true
+  #   restart: unless-stopped
 
 volumes:
   data:
