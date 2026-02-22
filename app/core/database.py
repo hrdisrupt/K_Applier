@@ -21,12 +21,12 @@ def _is_sqlite(url: str) -> bool:
 def _build_engine():
     """
     Build the SQLAlchemy engine based on DATABASE_URL.
-    
+
     - SQLite: uses check_same_thread=False (required for FastAPI)
     - MSSQL: uses pool_pre_ping to handle Azure connection drops
     """
     url = settings.database_url
-    
+
     if _is_sqlite(url):
         return create_engine(
             url,

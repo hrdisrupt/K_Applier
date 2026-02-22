@@ -9,7 +9,8 @@ from datetime import datetime
 from typing import Optional
 from enum import Enum
 from sqlmodel import SQLModel, Field, Column
-from sqlalchemy import Text
+from sqlalchemy import Text, Index
+from sqlalchemy.types import VARCHAR
 
 
 class ApplicationStatus(str, Enum):
@@ -24,11 +25,17 @@ class ApplicationStatus(str, Enum):
 class Application(SQLModel, table=True):
     """Application record - una candidatura"""
     __tablename__ = "applications"
-    
+
+    __table_args__ = (
+        Index("ix_applications_job_url", "job_url"),
+    )
+
     id: Optional[int] = Field(default=None, primary_key=True)
     
     # Job info
-    job_url: str = Field(index=True)
+    # NOTE MSSQL: un indice su NVARCHAR(MAX)/TEXT fallisce (Errore 1919).
+    # Usiamo VARCHAR(900) per restare entro il limite 900 bytes delle index key.
+    job_url: str = Field(sa_column=Column(VARCHAR(900), nullable=False))
     job_title: Optional[str] = None
     company_name: Optional[str] = None
     job_id: Optional[int] = Field(default=None, index=True)  # FK to jobs table (scraper)
