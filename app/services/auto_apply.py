@@ -48,12 +48,16 @@ class AutoApplyService:
     
     async def start_browser(self):
         """Avvia il browser Playwright"""
-        self.playwright = await async_playwright().start()
-        self.browser = await self.playwright.chromium.launch(
-            headless=settings.headless,
-            slow_mo=settings.slow_mo
-        )
-        print(f"[AUTOAPPLY] Browser started (headless={settings.headless})", flush=True)
+        try:
+            self.playwright = await async_playwright().start()
+            self.browser = await self.playwright.chromium.launch(
+                headless=settings.headless,
+                slow_mo=settings.slow_mo
+            )
+            print(f"[AUTOAPPLY] Browser started (headless={settings.headless})", flush=True)
+        except Exception as e:
+            print(f"[AUTOAPPLY] Failed to start browser: {type(e).__name__}: {e}", flush=True)
+            raise e
     
     async def stop_browser(self):
         """Chiude il browser"""

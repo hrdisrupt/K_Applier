@@ -26,7 +26,7 @@ playwright==1.41.2
 httpx==0.27.0
 
 # Utilities
-python-multipart==0.0.9
+python-multipart==0.0.22
 
 # Optional: Azure Blob Storage
 # azure-storage-blob==12.19.0

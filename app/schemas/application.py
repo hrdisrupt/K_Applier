@@ -47,7 +47,7 @@ class CandidateInfo(BaseModel):
 
 class ApplicationCreate(BaseModel):
     """Schema per creare una nuova candidatura"""
-    job_url: str = Field(..., description="URL dell'offerta di lavoro")
+    job_url: str = Field(..., min_length=5, max_length=900, description="URL dell'offerta di lavoro")
     job_title: Optional[str] = Field(None, max_length=200)
     company_name: Optional[str] = Field(None, max_length=200)
     candidate: CandidateInfo
