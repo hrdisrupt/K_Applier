@@ -57,6 +57,7 @@ class Settings(BaseSettings):
     # Azure Service Bus (queue consumer mode)
     servicebus_connection_string: str = ""
     servicebus_queue_name: str = "applications"
+    servicebus_max_lock_renewal_seconds: int = 300  # Max total time to keep renewing lock
 
     @property
     def is_sqlite(self) -> bool:

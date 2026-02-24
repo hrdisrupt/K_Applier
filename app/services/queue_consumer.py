@@ -39,7 +39,7 @@ import signal
 from datetime import datetime
 from typing import Optional
 
-from azure.servicebus import ServiceBusClient, ServiceBusMessage
+from azure.servicebus import ServiceBusClient, AutoLockRenewer
 from azure.servicebus.exceptions import ServiceBusError
 from sqlmodel import Session
 
@@ -123,7 +123,10 @@ class QueueConsumer:
                 return  # No message, loop back
             
             msg = messages[0]
-            
+            auto_lock_renewer = AutoLockRenewer() if AutoLockRenewer is not None else None
+            if auto_lock_renewer:
+                auto_lock_renewer.register(receiver, msg, timeout=settings.servicebus_max_lock_renewal_seconds)
+
             try:
                 # Parse message
                 body = str(msg)
