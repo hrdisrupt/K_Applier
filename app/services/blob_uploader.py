@@ -62,7 +62,7 @@ class BlobUploader:
     def is_available(self) -> bool:
         return self._available
     
-    def upload_file(self, local_path: str, blob_folder: str = "screenshots") -> Optional[str]:
+    def upload_file(self, local_path: str, blob_folder: str) -> Optional[str]:
         """
         Upload a file to Azure Blob Storage.
         

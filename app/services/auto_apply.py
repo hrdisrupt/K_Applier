@@ -41,6 +41,7 @@ class AutoApplyService:
     def __init__(self):
         self.browser: Optional[Browser] = None
         self.cv_loader = get_cv_loader()
+        self.path: str = None
         
         # Crea directory screenshots se non esiste
         if settings.save_screenshots:
@@ -809,7 +810,7 @@ class AutoApplyService:
         ]
         
         # Carica il contenuto del CV
-        cv_content, cv_filename = self.cv_loader.load(cv_reference)
+        cv_content, cv_filename, self.path = self.cv_loader.load(cv_reference)
         
         # Salva temporaneamente il file - NON cancellare prima del submit!
         # Il file deve esistere quando il form fa POST con multipart/form-data
@@ -971,7 +972,7 @@ class AutoApplyService:
         if settings.upload_screenshots_to_blob:
             uploader = get_blob_uploader()
             if uploader.is_available:
-                uploader.upload_file(str(screenshot_path), "screenshots")
-                uploader.upload_file(str(html_path), "screenshots")
+                uploader.upload_file(str(screenshot_path), f"{settings.azure_container_name}/{self.path}")
+                uploader.upload_file(str(html_path), f"{settings.azure_container_name}/{self.path}")
         
         return str(screenshot_path)
