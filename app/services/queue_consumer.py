@@ -96,6 +96,7 @@ class QueueConsumer:
         
         # Main consumer loop
         while self.running:
+            print("[WORKER] Waiting for messages...", flush=True)
             try:
                 await self._receive_and_process()
             except ServiceBusError as e:
@@ -111,11 +112,11 @@ class QueueConsumer:
     
     async def _receive_and_process(self):
         """Receive one message and process it"""
-        with self.servicebus_client.get_queue_receiver(
+        async with self.servicebus_client.get_queue_receiver(
             queue_name=settings.servicebus_queue_name,
             max_wait_time=30  # Long poll: wait up to 30s for a message
         ) as receiver:
-            messages = receiver.receive_messages(max_message_count=1, max_wait_time=30)
+            messages = await receiver.receive_messages(max_message_count=1, max_wait_time=30)
             
             if not messages:
                 return  # No message, loop back
