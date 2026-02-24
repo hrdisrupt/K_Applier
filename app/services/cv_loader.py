@@ -63,7 +63,7 @@ class LocalCVLoader(CVLoader):
 class URLCVLoader(CVLoader):
     """Carica CV da URL pubblico"""
 
-    def load(self, reference: str) -> Tuple[bytes, str]:
+    def load(self, reference: str) -> Tuple[bytes, str, str]:
         response = httpx.get(reference, follow_redirects=True, timeout=30)
         response.raise_for_status()
 
@@ -71,8 +71,9 @@ class URLCVLoader(CVLoader):
         filename = reference.split('/')[-1].split('?')[0]
         if not filename.endswith('.pdf'):
             filename = 'cv.pdf'
+        path = reference.split('/')[0]
 
-        return response.content, filename
+        return response.content, filename, path
 
     def exists(self, reference: str) -> bool:
         try:
@@ -98,11 +99,12 @@ class AzureBlobCVLoader(CVLoader):
         except ImportError:
             raise ImportError("azure-storage-blob not installed. Run: pip install azure-storage-blob")
 
-    def load(self, reference: str) -> Tuple[bytes, str]:
+    def load(self, reference: str) -> Tuple[bytes, str, str]:
         blob_client = self.container.get_blob_client(reference)
         content = blob_client.download_blob().readall()
         filename = reference.split('/')[-1]
-        return content, filename
+        path = reference.split('/')[0]
+        return content, filename, path
 
     def exists(self, reference: str) -> bool:
         blob_client = self.container.get_blob_client(reference)
@@ -119,7 +121,7 @@ class S3CVLoader(CVLoader):
         except ImportError:
             raise ImportError("boto3 not installed. Run: pip install boto3")
 
-    def load(self, reference: str) -> Tuple[bytes, str]:
+    def load(self, reference: str) -> Tuple[bytes, str, str]:
         # reference format: "bucket-name/path/to/cv.pdf"
         parts = reference.split('/', 1)
         bucket = parts[0]
@@ -128,8 +130,9 @@ class S3CVLoader(CVLoader):
         response = self.s3.get_object(Bucket=bucket, Key=key)
         content = response['Body'].read()
         filename = key.split('/')[-1]
+        path = key.split('/')[0]
 
-        return content, filename
+        return content, filename, path
 
     def exists(self, reference: str) -> bool:
         try:
