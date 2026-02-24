@@ -41,7 +41,7 @@ class AutoApplyService:
     def __init__(self):
         self.browser: Optional[Browser] = None
         self.cv_loader = get_cv_loader()
-        self.path: str = None
+        self.path: str = "screenshots"
         
         # Crea directory screenshots se non esiste
         if settings.save_screenshots:
