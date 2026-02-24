@@ -42,9 +42,10 @@ jobs:
           registryPassword: ${{ secrets.KAPPLIER_REGISTRY_PASSWORD }}
           containerAppName: k-applier
           resourceGroup: kangrats-engine
-          imageToBuild: index.docker.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_2FD4CC98B52141C38041F0E46779F217 }}/k-applier:${{ github.sha }}
+          imageToBuild: index.docker.io/${{ secrets.KAPPLIER_REGISTRY_USERNAME }}/k-applier:${{ github.sha }}
           _buildArgumentsKey_: |
             _buildArgumentsValues_
+
 
 
 
