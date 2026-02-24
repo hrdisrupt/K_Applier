@@ -972,7 +972,7 @@ class AutoApplyService:
         if settings.upload_screenshots_to_blob:
             uploader = get_blob_uploader()
             if uploader.is_available:
-                uploader.upload_file(str(screenshot_path), f"{settings.azure_container_name}/{self.path}")
-                uploader.upload_file(str(html_path), f"{settings.azure_container_name}/{self.path}")
+                uploader.upload_file(str(screenshot_path), self.path)
+                uploader.upload_file(str(html_path), self.path)
         
         return str(screenshot_path)
