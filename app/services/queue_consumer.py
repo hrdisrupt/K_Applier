@@ -125,7 +125,17 @@ class QueueConsumer:
             msg = messages[0]
             auto_lock_renewer = AutoLockRenewer() if AutoLockRenewer is not None else None
             if auto_lock_renewer:
-                auto_lock_renewer.register(receiver, msg, timeout=settings.servicebus_max_lock_renewal_seconds)
+                # Keep renewing the peek-lock while Playwright runs.
+                # NOTE: azure-servicebus uses max_lock_renewal_duration (not "timeout").
+                try:
+                    auto_lock_renewer.register(
+                        receiver,
+                        msg,
+                        max_lock_renewal_duration=settings.servicebus_max_lock_renewal_seconds,
+                    )
+                except TypeError:
+                    # Backwards/forwards compatibility with SDK signature changes.
+                    auto_lock_renewer.register(receiver, msg, settings.servicebus_max_lock_renewal_seconds)
 
             try:
                 # Parse message
@@ -153,6 +163,12 @@ class QueueConsumer:
             except Exception as e:
                 print(f"[WORKER] Processing error: {e}", flush=True)
                 receiver.abandon_message(msg)
+            finally:
+                if auto_lock_renewer:
+                    try:
+                        auto_lock_renewer.close()
+                    except Exception:
+                        pass
     
     async def _process_application(self, data: dict) -> bool:
         """
