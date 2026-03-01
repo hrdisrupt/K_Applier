@@ -51,6 +51,7 @@ def create_application(
         application = service.create_application(
             job_url=data.job_url,
             job_title=data.job_title,
+            job_id=data.job_id,
             company_name=data.company_name,
             candidate_nome=data.candidate.nome,
             candidate_cognome=data.candidate.cognome,
@@ -90,6 +91,7 @@ def create_batch_applications(
             service.create_application(
                 job_url=app_data.job_url,
                 job_title=app_data.job_title,
+                job_id=app_data.job_id,
                 company_name=app_data.company_name,
                 candidate_nome=app_data.candidate.nome,
                 candidate_cognome=app_data.candidate.cognome,

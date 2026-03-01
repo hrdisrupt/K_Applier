@@ -49,6 +49,7 @@ class ApplicationCreate(BaseModel):
     """Schema per creare una nuova candidatura"""
     job_url: str = Field(..., min_length=5, max_length=900, description="URL dell'offerta di lavoro")
     job_title: Optional[str] = Field(None, max_length=200)
+    job_id: Optional[str] = Field(None, max_length=32, description="fingerprint del lavoro (FK a tabella jobs)")
     company_name: Optional[str] = Field(None, max_length=200)
     candidate: CandidateInfo
 
@@ -59,6 +60,7 @@ class ApplicationResponse(BaseModel):
     job_url: str
     job_title: Optional[str]
     company_name: Optional[str]
+    job_id: Optional[str]
     
     # Candidate
     candidate_nome: str

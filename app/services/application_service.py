@@ -50,6 +50,7 @@ class ApplicationService:
         accetto_terze_parti: bool = False,
         accetto_banca_dati: bool = False,
         job_title: Optional[str] = None,
+        job_id: Optional[str] = None,
         company_name: Optional[str] = None
     ) -> Application:
         """Crea una nuova candidatura in coda"""
@@ -62,6 +63,7 @@ class ApplicationService:
         application = Application(
             job_url=job_url,
             job_title=job_title,
+            job_id=job_id,
             company_name=company_name,
             candidate_nome=candidate_nome,
             candidate_cognome=candidate_cognome,

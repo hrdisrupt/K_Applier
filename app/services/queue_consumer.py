@@ -244,6 +244,7 @@ class QueueConsumer:
         return service.create_application(
             job_url=data.get("job_url", ""),
             job_title=data.get("job_title"),
+            job_id=data.get("job_id"),
             company_name=data.get("company_name"),
             candidate_nome=candidate.get("nome", ""),
             candidate_cognome=candidate.get("cognome", ""),
