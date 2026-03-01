@@ -209,7 +209,7 @@ class ApplicationService:
             
             # Try to update by job_id FK first
             if application.job_id:
-                self.session.execute(
+                self.session.exec(
                     text(f"UPDATE jobs SET applied = 1, applied_at = {now_sql} WHERE id = :job_id"),
                     {"job_id": application.job_id}
                 )
@@ -220,7 +220,7 @@ class ApplicationService:
             # Fallback: try to find job by URL match
             if application.job_url:
                 base_url = application.job_url.split("?")[0]
-                self.session.execute(
+                self.session.exec(
                     text(f"UPDATE jobs SET applied = 1, applied_at = {now_sql} WHERE url LIKE :url_pattern"),
                     {"url_pattern": f"%{base_url}%"}
                 )
