@@ -78,8 +78,8 @@ class AutoApplyService:
             Application aggiornata con status/error
         """
         application.status = ApplicationStatus.PROCESSING
-        application.started_at = datetime.now()
-        application.attempts += 1
+        # application.started_at = datetime.now()
+        # application.attempts += 1
         
         print(f"[AUTOAPPLY] Processing: {application.job_url}", flush=True)
         print(f"[AUTOAPPLY] Candidate: {application.candidate_nome} {application.candidate_cognome} ({application.candidate_email})", flush=True)

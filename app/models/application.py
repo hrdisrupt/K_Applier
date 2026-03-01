@@ -82,7 +82,7 @@ class Application(SQLModel, table=True):
     
     # Retry logic
     attempts: int = 0
-    max_attempts: int = 3
+    max_attempts: int = 10
 
 
 class ApplicationRun(SQLModel, table=True):
