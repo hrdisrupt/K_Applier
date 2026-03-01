@@ -38,7 +38,7 @@ class Application(SQLModel, table=True):
     job_url: str = Field(sa_column=Column(VARCHAR(900), nullable=False))
     job_title: Optional[str] = None
     company_name: Optional[str] = None
-    job_id: Optional[int] = Field(default=None, index=True)  # FK to jobs table (scraper)
+    job_id: Optional[str] = None  # FK to jobs table (scraper)
     
     # Candidate - Anagrafica
     candidate_nome: str
