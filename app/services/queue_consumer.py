@@ -200,7 +200,7 @@ class QueueConsumer:
                     service.save(result)
                     
                     if result.status == ApplicationStatus.SUCCESS:
-                        service.mark_job_as_applied(result)
+                        # service.mark_job_as_applied(result) # Optional: update related job record if needed
                         print(f"[WORKER] ✅ Application successful: {data.get('job_url')}", flush=True)
                         return True
                     else:
